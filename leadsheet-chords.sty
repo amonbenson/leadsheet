@@ -64,26 +64,29 @@
         \l__leadsheet_chord_input_tl
         \l__leadsheet_chord_parts_seq
     {
-        % Extract matched groups
-        \tl_set:Nx \l__leadsheet_chord_root_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 2 } }
-        \tl_set:Nx \l__leadsheet_chord_ext_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 5 } }
-        \tl_set:Nx \l__leadsheet_chord_bass_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 7 } }
+        % Extract matched groups - use expansion that preserves token structure
+        \tl_set_eq:NN \l__leadsheet_chord_root_tl \c_empty_tl
+        \tl_set_eq:NN \l__leadsheet_chord_ext_tl \c_empty_tl
+        \tl_set_eq:NN \l__leadsheet_chord_bass_tl \c_empty_tl
+        \tl_put_right:Nx \l__leadsheet_chord_root_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 2 } }
+        \tl_put_right:Nx \l__leadsheet_chord_ext_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 5 } }
+        \tl_put_right:Nx \l__leadsheet_chord_bass_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 7 } }
 
         % Reverse the "maj" substitution in extensions
         \tl_replace_all:Nnn \l__leadsheet_chord_ext_tl { X } { maj }
 
-        % Render the chord components
-        \leadsheet_chord_format_root:n { \l__leadsheet_chord_root_tl }
+        % Render the chord components (use :V variant for symbol replacement)
+        \leadsheet_chord_format_root:V \l__leadsheet_chord_root_tl
 
         % Add extensions if present
         \tl_if_empty:NF \l__leadsheet_chord_ext_tl {
-            \leadsheet_chord_format_ext:n { \l__leadsheet_chord_ext_tl }
+            \leadsheet_chord_format_ext:V \l__leadsheet_chord_ext_tl
         }
 
         % Add bass note if present
         \tl_if_empty:NF \l__leadsheet_chord_bass_tl {
             \leadsheet_chord_format_slash:
-            \leadsheet_chord_format_root:n { \l__leadsheet_chord_bass_tl }
+            \leadsheet_chord_format_root:V \l__leadsheet_chord_bass_tl
         }
     } {
         % Parsing failed - show error
@@ -114,15 +117,37 @@
 
 % \leadsheet_chord_format_root:n {<root>}
 % Formats the root note of a chord (e.g., "C", "F#m", "Bb")
+% Replaces # with ♯ and b with ♭ symbols
 \cs_new_protected:Npn \leadsheet_chord_format_root:n #1 {
-    \textbf{#1}
+    \group_begin:
+    \tl_set:Nn \l_tmpa_tl { #1 }
+    \tl_clear:N \l_tmpb_tl
+    \tl_put_right:Nx \l_tmpb_tl { \tl_use:N \l_tmpa_tl }
+    % Replace \# with musical sharp symbol
+    \regex_replace_all:nnN { \c{\#} } { \c{musicalsharp} } \l_tmpb_tl
+    % Replace b after note letters with musical flat symbol
+    \regex_replace_all:nnN { ([A-Ga-g])b } { \1 \c{musicalflat} } \l_tmpb_tl
+    \textbf{\tl_use:N \l_tmpb_tl}
+    \group_end:
 }
+\cs_generate_variant:Nn \leadsheet_chord_format_root:n { V }
 
 % \leadsheet_chord_format_ext:n {<extension>}
 % Formats chord extensions (e.g., "7", "maj9", "#11") as superscript
+% Replaces # with ♯ and b with ♭ symbols
 \cs_new_protected:Npn \leadsheet_chord_format_ext:n #1 {
-    \textbf{\textsuperscript{#1}}
+    \group_begin:
+    \tl_set:Nn \l_tmpa_tl { #1 }
+    \tl_clear:N \l_tmpb_tl
+    \tl_put_right:Nx \l_tmpb_tl { \tl_use:N \l_tmpa_tl }
+    % Replace \# with musical sharp symbol
+    \regex_replace_all:nnN { \c{\#} } { \c{musicalsharp} } \l_tmpb_tl
+    % Replace b before digits with musical flat symbol
+    \regex_replace_all:nnN { b(\d+) } { \c{musicalflat} \1 } \l_tmpb_tl
+    \textbf{\textsuperscript{\tl_use:N \l_tmpb_tl}}
+    \group_end:
 }
+\cs_generate_variant:Nn \leadsheet_chord_format_ext:n { V }
 
 % \leadsheet_chord_format_slash:
 % Formats the slash separator between chord and bass note

@@ -35,6 +35,12 @@
 % Set the main font to TeX Gyre Heros (Helvetica clone)
 \setmainfont{TeX Gyre Heros}
 
+% Configure DejaVu Sans for musical sharp and flat symbols (inline use only)
+% These symbols (♯ U+266F and ♭ U+266D) are not available in TeX Gyre Heros
+\newfontfamily\musicsymbolfont{DejaVu Sans}[Scale=MatchUppercase]
+\newcommand{\musicalsharp}{{\musicsymbolfont ♯}}
+\newcommand{\musicalflat}{{\musicsymbolfont ♭}}
+
 
 % ============================================================================
 % LOAD LEADSHEET PACKAGE MODULES
