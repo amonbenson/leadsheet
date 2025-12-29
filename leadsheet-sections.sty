@@ -1,0 +1,141 @@
+%!TeX program = LuaLaTeX
+%
+% leadsheet-sections.sty
+% Song section environments and tabular formatting for the leadsheet package
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leadsheet-sections}[2025/12/29 Leadsheet section environments]
+
+\RequirePackage[framemethod=tikz]{mdframed}
+\RequirePackage{array}
+
+\ExplSyntaxOn
+
+% ============================================================================
+% LEADSHEET TABULAR ENVIRONMENT
+% ============================================================================
+% The lstabular environment provides a specialized table for displaying
+% lyrics and chords. It preprocesses the content to expand chord symbols,
+% barlines, and other musical notation.
+
+% --- Variables ---
+
+% Stores the preprocessed content of the lstabular environment
+\tl_new:N \l__leadsheet_tabular_content_tl
+
+% --- Public environment ---
+
+% lstabular environment
+% Creates a tabular layout for lyrics and chords with automatic preprocessing.
+%
+% The environment accepts the table body and:
+%   1. Preprocesses all chord symbols (^Cm7), barlines (|), and special syntax
+%   2. Sets up optimal column spacing based on font metrics
+%   3. Creates a left-aligned table with up to 32 columns
+%
+% Usage:
+%   \begin{lstabular}
+%     & ^Cm7 & ^F7 & ^Bb \\
+%     <> Just a & steel town girl & on a & Saturday night \\
+%   \end{lstabular}
+%
+\NewDocumentEnvironment { lstabular } { +b } {
+    \group_begin:
+
+    % Preprocess the table body (expand chords, barlines, etc.)
+    \tl_set:Nx \l__leadsheet_tabular_content_tl {
+        \__leadsheet_preprocess:n { #1 }
+    }
+
+    % Set column separation to half the width of a space character
+    % This provides natural spacing that scales with the font
+    \setlength{\tabcolsep}{0.5\fontdimen2\font}
+
+    % Create a simple left-aligned table with 32 columns (no outer padding)
+    % The preprocessed content is inserted into the table body
+    \noindent\begin{tabular}{@{}*{32}{l}}
+        \tl_use:N \l__leadsheet_tabular_content_tl
+    \end{tabular}
+
+    \group_end:
+} { }
+
+
+% ============================================================================
+% SONG SECTION ENVIRONMENTS
+% ============================================================================
+% Environments for creating labeled sections of a song (Verse, Chorus, etc.)
+% with optional highlighting.
+
+% --- songsection environment ---
+
+% songsection environment
+% Creates a labeled section of a song with a title.
+%
+% Usage:
+%   \begin{songsection}{Verse 1}
+%     & ^Cm7 & ^F7 \\
+%     <> Just a & steel town girl \\
+%   \end{songsection}
+%
+% Parameters:
+%   #1 - Section title (e.g., "Verse 1", "Chorus", "Bridge")
+%   #2 - Section content (lyrics and chords in lstabular format)
+%
+\NewDocumentEnvironment { songsection } { m +b } {
+    \group_begin:
+
+    % Add vertical space before the section
+    \par\bigskip
+
+    % Render the section title in large bold text
+    \noindent\textbf{\Large #1}\par\medskip
+
+    % Start the lyrics/chords table
+    % (content will be automatically preprocessed by lstabular)
+    \begin{lstabular}
+        #2
+    \end{lstabular}
+
+    \group_end:
+} { }
+
+% --- hlsongsection environment ---
+
+% hlsongsection environment (highlighted song section)
+% Creates a highlighted song section with a colored background.
+%
+% This is identical to songsection but wrapped in a colored frame,
+% useful for emphasizing important sections like the chorus.
+%
+% Usage:
+%   \begin{hlsongsection}{Chorus}
+%     & ^Cm7 & ^F7 \\
+%     <> And she's dancing \\
+%   \end{hlsongsection}
+%
+% Parameters:
+%   #1 - Section title (e.g., "Chorus", "Hook")
+%   #2 - Section content (lyrics and chords)
+%
+\NewDocumentEnvironment { hlsongsection } { m +b } {
+    \begin{mdframed}[
+        hidealllines=true,           % No border lines
+        backgroundcolor=yellow!65,   % Yellow highlight
+        innerleftmargin=3pt,
+        innerrightmargin=3pt,
+        innerbottommargin=3pt,
+        innertopmargin=-6pt,        % Negative to reduce space above title
+        leftmargin=-3pt,            % Extend slightly into margin
+        rightmargin=-3pt,
+    ]
+    \begin{songsection}{#1}
+        #2
+    \end{songsection}
+    \end{mdframed}
+} { }
+
+
+\ExplSyntaxOff
+
+\endinput

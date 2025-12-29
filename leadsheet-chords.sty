@@ -1,0 +1,240 @@
+%!TeX program = LuaLaTeX
+%
+% leadsheet-chords.sty
+% Chord parsing, formatting, and progression system for the leadsheet package
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leadsheet-chords}[2025/12/29 Leadsheet chord system]
+
+\ExplSyntaxOn
+
+% ============================================================================
+% CHORD PARSING AND RENDERING
+% ============================================================================
+% This module parses chord notation (e.g., "Cm7", "F#maj9/A") and renders it
+% with proper formatting. It handles root notes, alterations, qualities,
+% extensions, and bass notes.
+
+% --- Variables for chord parsing ---
+
+% Input chord string to be parsed
+\tl_new:N \l__leadsheet_chord_input_tl
+% Sequence to store regex match results
+\seq_new:N \l__leadsheet_chord_parts_seq
+
+% Components of a parsed chord
+\tl_new:N \l__leadsheet_chord_root_tl      % Root note (e.g., "Cm", "F#")
+\tl_new:N \l__leadsheet_chord_ext_tl       % Extensions (e.g., "7", "#11", "maj9")
+\tl_new:N \l__leadsheet_chord_bass_tl      % Bass note (e.g., "A" in "C/A")
+
+% --- Error messages ---
+
+\msg_new:nnn { leadsheet } { invalid-chord-syntax } { Invalid~chord~syntax:~'#1' }
+
+% --- Internal chord rendering function ---
+
+% \__leadsheet_chord_draw:n {<chord>}
+% Internal function that parses and renders a chord symbol.
+%
+% The chord notation is parsed using a regex that extracts:
+%   - Root note + alteration + quality (required): e.g., "C", "F#m", "Bbdim"
+%   - Extensions (optional): e.g., "7", "maj9", "#11", "sus4"
+%   - Bass note (optional): e.g., "/A", "/E"
+%
+% Examples:
+%   Cm7      -> C minor 7th
+%   F#maj9   -> F# major 9th
+%   Dm7/A    -> D minor 7th with A in bass
+%   Ebm#11   -> Eb minor with raised 11th
+%
+\cs_new_protected:Npn \__leadsheet_chord_draw:n #1
+{
+    \tl_set:Nn \l__leadsheet_chord_input_tl { #1 }
+
+    % Substitute "maj" with "X" to avoid confusion with "mmaj"
+    % (for minor-major7 chords, which are uncommon but valid)
+    \tl_replace_all:Nnn \l__leadsheet_chord_input_tl { maj } { X }
+
+    % Parse chord using regex:
+    % Group 2: root note + alteration + quality (required)
+    % Group 5: extensions (optional)
+    % Group 7: bass note + alteration (optional)
+    \regex_extract_once:nVNTF
+        { ^\s*([A-Ha-h](\c{\#}|b|is|es)?(m|M|dim|aug)?)([^\/]*)?(\/(\S*))?\s*$ }
+        \l__leadsheet_chord_input_tl
+        \l__leadsheet_chord_parts_seq
+    {
+        % Extract matched groups
+        \tl_set:Nx \l__leadsheet_chord_root_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 2 } }
+        \tl_set:Nx \l__leadsheet_chord_ext_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 5 } }
+        \tl_set:Nx \l__leadsheet_chord_bass_tl { \seq_item:Nn \l__leadsheet_chord_parts_seq { 7 } }
+
+        % Reverse the "maj" substitution in extensions
+        \tl_replace_all:Nnn \l__leadsheet_chord_ext_tl { X } { maj }
+
+        % Render the chord components
+        \leadsheet_chord_format_root:n { \l__leadsheet_chord_root_tl }
+
+        % Add extensions if present
+        \tl_if_empty:NF \l__leadsheet_chord_ext_tl {
+            \leadsheet_chord_format_ext:n { \l__leadsheet_chord_ext_tl }
+        }
+
+        % Add bass note if present
+        \tl_if_empty:NF \l__leadsheet_chord_bass_tl {
+            \leadsheet_chord_format_slash:
+            \leadsheet_chord_format_root:n { \l__leadsheet_chord_bass_tl }
+        }
+    } {
+        % Parsing failed - show error
+        \msg_error:nnn { leadsheet } { invalid-chord-syntax } { #1 }
+    }
+}
+
+% --- Internal annotation functions ---
+
+% \__leadsheet_chord_draw_annot:n {<text>}
+% Draws an annotation label (formatted like a chord but with custom text)
+\cs_new_protected:Npn \__leadsheet_chord_draw_annot:n #1 {
+    \textbf{\textit{#1}}
+}
+
+% \__leadsheet_chord_draw_nc:
+% Draws a "no chord" annotation (n. C.)
+\cs_new_protected:Nn \__leadsheet_chord_draw_nc: {
+    \__leadsheet_chord_draw_annot:n{ n.~C. }
+}
+
+
+% ============================================================================
+% CHORD FORMATTING FUNCTIONS
+% ============================================================================
+% These public functions control how chord components are displayed.
+% Users can redefine these to customize chord appearance.
+
+% \leadsheet_chord_format_root:n {<root>}
+% Formats the root note of a chord (e.g., "C", "F#m", "Bb")
+\cs_new_protected:Npn \leadsheet_chord_format_root:n #1 {
+    \textbf{#1}
+}
+
+% \leadsheet_chord_format_ext:n {<extension>}
+% Formats chord extensions (e.g., "7", "maj9", "#11") as superscript
+\cs_new_protected:Npn \leadsheet_chord_format_ext:n #1 {
+    \textbf{\textsuperscript{#1}}
+}
+
+% \leadsheet_chord_format_slash:
+% Formats the slash separator between chord and bass note
+\cs_new_protected:Npn \leadsheet_chord_format_slash: {
+    \textbf{/}
+}
+
+% --- Legacy document-level commands for formatting ---
+% These are kept for backwards compatibility and user customization
+
+\newcommand{\lschordfmtroot}[1]{\textbf{#1}}
+\newcommand{\lschordfmtext}[1]{\textbf{\textsuperscript{#1}}}
+\newcommand{\lschordfmtslash}{\textbf{/}}
+\newcommand{\lschordfmtannot}[1]{\textbf{\textit{#1}}}
+
+
+% ============================================================================
+% CHORD PROGRESSION SYSTEM
+% ============================================================================
+% Allows users to define named chord progressions and reuse them throughout
+% the document using the ^{Name} syntax.
+
+% --- Variables for progression storage ---
+
+% Input progression name
+\tl_new:N \l__leadsheet_progression_input_tl
+% Register name for storing progression
+\tl_new:N \l__leadsheet_progression_register_tl
+% Content of the progression
+\tl_new:N \l__leadsheet_progression_content_tl
+% Preprocessed progression content
+\tl_new:N \l__leadsheet_progression_preprocessed_tl
+% Sequence for regex matches
+\seq_new:N \l__leadsheet_progression_match_seq
+
+% --- Internal progression functions ---
+
+% \__leadsheet_progression_select_register:n {<name>}
+% Generates a sanitized register name for storing a progression.
+% The name is converted to lowercase and non-alphabetic characters are removed.
+%
+% Example: "Verse A" -> "c__leadsheet_progression_register_versea"
+%
+\cs_new_protected:Npn \__leadsheet_progression_select_register:n #1 {
+    % Create register name: c__leadsheet_progression_register_<name>
+    \tl_set:Nx \l__leadsheet_progression_register_tl {
+        \str_lowercase:n { c__leadsheet_progression_register_#1 }
+    }
+    % Remove all non-alphabetic characters and underscores from the name
+    \regex_replace_all:nnN { [^a-z_] } { } \l__leadsheet_progression_register_tl
+}
+
+% \__leadsheet_progression_use:n {<name>}
+% Retrieves and expands a stored chord progression by name.
+% The progression content is preprocessed before being inserted.
+%
+\cs_new_protected:Npn \__leadsheet_progression_use:n #1 {
+    % Get the register name for this progression
+    \__leadsheet_progression_select_register:n { #1 }
+
+    % Retrieve the progression content from the register
+    \tl_set_eq:Nc \l__leadsheet_progression_content_tl { \l__leadsheet_progression_register_tl }
+
+    % Preprocess the content (expand chords, barlines, etc.)
+    \tl_set:Nx \l__leadsheet_progression_preprocessed_tl {
+        \__leadsheet_preprocess:n { \l__leadsheet_progression_content_tl }
+    }
+
+    % Output the preprocessed progression
+    \tl_use:N \l__leadsheet_progression_preprocessed_tl
+}
+
+
+% ============================================================================
+% PUBLIC DOCUMENT INTERFACE
+% ============================================================================
+
+% \chord{<chord>}
+% Public command for rendering a single chord symbol.
+%
+% Example: \chord{Cm7} produces a formatted C minor 7th chord
+%
+\NewDocumentCommand { \chord } { m } {
+    \__leadsheet_chord_draw:n { #1 }
+}
+
+% chordprogression environment
+% Defines a named chord progression that can be reused throughout the document.
+%
+% Usage:
+%   \begin{chordprogression}{Name}
+%     |^Cm7 & |^F7 & |^Bbmaj7 & |^Ebmaj7
+%   \end{chordprogression}
+%
+% Later reference with: ^{Name}
+%
+\NewDocumentEnvironment { chordprogression } { m +b } {
+    \group_begin:
+
+    % Store the progression content with minimal preprocessing
+    % (We only escape special characters here; full preprocessing happens on use)
+    \tl_set:Nn \l__leadsheet_progression_input_tl { #2 }
+    \regex_replace_all:nnN { \cP\# } { \c{\#} } \l__leadsheet_progression_input_tl
+
+    % Create a constant register to store this progression
+    \__leadsheet_progression_select_register:n { #1 }
+    \tl_const:cx { \l__leadsheet_progression_register_tl } { \l__leadsheet_progression_input_tl }
+
+    \group_end:
+} { }
+
+
+\ExplSyntaxOff
+
+\endinput

@@ -1,0 +1,149 @@
+%!TeX program = LuaLaTeX
+%
+% leadsheet-core.sty
+% Core preprocessing utilities and internal helpers for the leadsheet package
+%
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{leadsheet-core}[2025/12/29 Leadsheet core preprocessing utilities]
+
+\RequirePackage{soul}
+\RequirePackage{calc}
+
+\ExplSyntaxOn
+
+% ============================================================================
+% PREPROCESSING ENGINE
+% ============================================================================
+% The preprocessing engine transforms user-friendly syntax into LaTeX commands.
+% This includes handling barlines, chord syntax, progressions, and special symbols.
+
+% --- Variables ---
+
+% Input token list for preprocessing
+\tl_new:N \l__leadsheet_preproc_input_tl
+% Output token list (currently unused, but reserved for future use)
+\tl_new:N \l__leadsheet_preproc_output_tl
+
+% --- Public preprocessing function ---
+
+% \__leadsheet_preprocess:n {<content>}
+% Internal preprocessing function that transforms shorthand syntax into LaTeX commands.
+% This is the main preprocessing engine used by lstabular and other environments.
+%
+% Transformations:
+%   - "#" -> "\#" (hash symbol)
+%   - "^" -> "\textasciicircum" (caret)
+%   - ":||" -> "\lsrepend" (repeat end barline)
+%   - "||:" -> "\lsrepstart" (repeat start barline)
+%   - "|" -> "\lsbarline" (regular barline)
+%   - "<>" -> "\lsfill" (infinite fill space)
+%   - "- &" -> "\lsjoin &" (join cells with dashes)
+%   - "^{Name}" -> chord progression reference
+%   - "^!{text}" -> annotation label
+%   - "^nC" -> "n. C." (no chord annotation)
+%   - "^CHORD" -> rendered chord
+%
+\cs_new_protected:Npn \__leadsheet_preprocess:n #1 {
+    % Read the input parameter
+    \tl_set:Nn \l__leadsheet_preproc_input_tl { #1 }
+
+    % Replace literal symbols that need escaping
+    \regex_replace_all:nnN { \cP\# } { \c{\#} } \l__leadsheet_preproc_input_tl
+    \regex_replace_all:nnN { \cU\^ } { \c{textasciicircum} } \l__leadsheet_preproc_input_tl
+
+    % Normalize spacing around barlines for better alignment
+    \regex_replace_all:nnN { \s*\|\s* } { \| } \l__leadsheet_preproc_input_tl
+
+    % Replace barline symbols with formatting commands
+    \regex_replace_all:nnN { :\|\| } { \c{lsrepend} } \l__leadsheet_preproc_input_tl
+    \regex_replace_all:nnN { \|\|: } { \c{lsrepstart} } \l__leadsheet_preproc_input_tl
+    \regex_replace_all:nnN { \| } { \c{lsbarline} } \l__leadsheet_preproc_input_tl
+
+    % Replace special shorthand commands
+    \tl_replace_all:Nnn \l__leadsheet_preproc_input_tl { <> } { \lsfill }
+    \regex_replace_all:nnN { -\s*& } { \c{lsjoin}& } \l__leadsheet_preproc_input_tl
+
+    % Chord progressions: ^{Name} -> progression content
+    \regex_replace_all:nnN { \c{textasciicircum}\cB\{(.*?)\cE\} }
+                           { \c{__leadsheet_progression_use:n}\cB\{ \1 \cE\} }
+                           \l__leadsheet_preproc_input_tl
+
+    % Annotations: ^!{text} -> formatted annotation
+    \regex_replace_all:nnN { \c{textasciicircum}\!\cB\{(.*?)\cE\} }
+                           { \c{__leadsheet_chord_draw_annot:n}\cB\{ \1 \cE\} }
+                           \l__leadsheet_preproc_input_tl
+
+    % No-chord shorthand: ^nC -> "n. C." annotation
+    \regex_replace_all:nnN { \c{textasciicircum}nC }
+                           { \c{__leadsheet_chord_draw_nc:} }
+                           \l__leadsheet_preproc_input_tl
+
+    % Chord symbols: ^CHORD -> rendered chord
+    \regex_replace_all:nnN { \c{textasciicircum}(\S*) }
+                           { \c{__leadsheet_chord_draw:n}{\1} }
+                           \l__leadsheet_preproc_input_tl
+
+    % Return the preprocessed result
+    \tl_use:N \l__leadsheet_preproc_input_tl
+}
+
+
+% ============================================================================
+% BARLINE FORMATTING
+% ============================================================================
+% Commands for drawing different types of barlines in leadsheets.
+
+% --- Dimensions ---
+
+% Width of regular barlines
+\newlength{\lsbarlinewidth}
+\setlength{\lsbarlinewidth}{1pt}
+
+% Width of repeat barlines (double the regular width)
+\newlength{\lsreplinewidth}
+\setlength{\lsreplinewidth}{2\lsbarlinewidth}
+
+% --- Helper macros for barline positioning ---
+
+% \lslsym{<symbol>}
+% Places a symbol to the left of the current position (using right-aligned zero-width box)
+\newcommand{\lslsym}[1]{\makebox[0pt][r]{\Large{#1}\vphantom{$\vert$}\hspace*{\tabcolsep}}}
+
+% \lsrsym{<symbol>}
+% Places a symbol to the right of the current position (using left-aligned zero-width box)
+\newcommand{\lsrsym}[1]{\makebox[0pt][l]{\hspace*{\tabcolsep}\Large{#1}\vphantom{$\vert$}}}
+
+% --- Public barline commands ---
+
+% Regular barline
+\newcommand{\lsbarline}{\lslsym{\vrule width \lsbarlinewidth}}
+
+% Repeat start barline: ||:
+\newcommand{\lsrepstart}{\lslsym{\vrule width \lsreplinewidth\hspace{\lsbarlinewidth}\vrule width \lsbarlinewidth :}}
+
+% Repeat end barline: :||
+\newcommand{\lsrepend}{\lslsym{:\vrule width \lsbarlinewidth\hspace{\lsbarlinewidth}\vrule width \lsreplinewidth}}
+
+
+% ============================================================================
+% LAYOUT UTILITIES
+% ============================================================================
+
+% \lsfill
+% Creates a fill space with the highest order of infinity (1filll).
+% Used to push apart sections of lyrics within a line.
+\newcommand{\lsfill}{\hskip 0pt plus 1filll}
+
+% \lsjoin
+% Connects two table cells with dashes, used before column separator "&".
+% Removes trailing whitespace, fills with dashes, and cancels the next column's left padding.
+\newcommand{\lsjoin}{%
+    \unskip% Remove trailing whitespace
+    \cleaders\hbox{--}\hfill% Fill space with dashes
+    \hspace*{-2\tabcolsep}% Cancel next column's left separation
+}
+
+
+\ExplSyntaxOff
+
+\endinput
