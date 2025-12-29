@@ -18,11 +18,6 @@
 % lyrics and chords. It preprocesses the content to expand chord symbols,
 % barlines, and other musical notation.
 
-% --- Variables ---
-
-% Stores the preprocessed content of the lstabular environment
-\tl_new:N \l__leadsheet_tabular_content_tl
-
 % --- Public environment ---
 
 % lstabular environment
@@ -42,19 +37,14 @@
 \NewDocumentEnvironment { lstabular } { +b } {
     \group_begin:
 
-    % Preprocess the table body (expand chords, barlines, etc.)
-    \tl_set:Nx \l__leadsheet_tabular_content_tl {
-        \__leadsheet_preprocess:n { #1 }
-    }
-
     % Set column separation to half the width of a space character
     % This provides natural spacing that scales with the font
     \setlength{\tabcolsep}{0.5\fontdimen2\font}
 
     % Create a simple left-aligned table with 32 columns (no outer padding)
-    % The preprocessed content is inserted into the table body
+    % The table body is preprocessed inline to avoid # doubling
     \noindent\begin{tabular}{@{}*{32}{l}}
-        \tl_use:N \l__leadsheet_tabular_content_tl
+        \__leadsheet_preprocess:n { #1 }
     \end{tabular}
 
     \group_end:

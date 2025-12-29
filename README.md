@@ -16,11 +16,15 @@ A LaTeX document class for creating professional musical leadsheets with integra
 ```latex
 \documentclass{leadsheet}
 
-\title{My Song}
-\key{Cm}
+\title{Michael Sembello -- Maniac}
+\key{Ebm}
 
-\begin{chordprogression}{Verse}
-    |^Cm7 & |^F7 & |^Bbmaj7 & |^Ebmaj7
+\begin{chordprogression}{Verse A}
+    |^Ebm#11 & |^Ebm7add13 & |^Ebm7 & |^Ebmmaj7
+\end{chordprogression}
+
+\begin{chordprogression}{Verse B}
+    |^Bbm5 & |^B6 & |^Bbsus2 & |^Bbsus4 ^B
 \end{chordprogression}
 
 \begin{document}
@@ -28,8 +32,14 @@ A LaTeX document class for creating professional musical leadsheets with integra
 \maketitle
 
 \begin{songsection}{Verse 1}
-    & ^{Verse} \\
-    <> Just a & steel town girl on a & Saturday night \\
+    & ^{Verse A} \\
+    <> Just a & steel town girl on a & Saturday night. <> Lookin' & for the fight of her & life \\
+    & ^{Verse B} \\
+    <> In the & real-time world, no one & sees her at all. <> They & all say she's cra- & zy \\
+    & ^{Verse A} \\
+    <> Locking & rhythms to the & beat of her heart. <> Changing & movement into light \\
+    & ^{Verse B} \\
+    <> She has & danced into the & danger zone. <> When the & dancer becomes the & dance
 \end{songsection}
 
 \end{document}

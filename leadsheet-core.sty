@@ -24,6 +24,20 @@
 % Output token list (currently unused, but reserved for future use)
 \tl_new:N \l__leadsheet_preproc_output_tl
 
+% --- Helper functions ---
+
+% \__leadsheet_escape_hash:N <tl>
+% Escapes literal # characters to \# in a token list
+\cs_new_protected:Npn \__leadsheet_escape_hash:N #1 {
+    \regex_replace_all:nnN { \cP\# } { \c{\#} } #1
+}
+
+% \__leadsheet_escape_caret:N <tl>
+% Escapes literal ^ characters to \textasciicircum in a token list
+\cs_new_protected:Npn \__leadsheet_escape_caret:N #1 {
+    \regex_replace_all:nnN { \cU\^ } { \c{textasciicircum} } #1
+}
+
 % --- Public preprocessing function ---
 
 % \__leadsheet_preprocess:n {<content>}
@@ -47,9 +61,9 @@
     % Read the input parameter
     \tl_set:Nn \l__leadsheet_preproc_input_tl { #1 }
 
-    % Replace literal symbols that need escaping
-    \regex_replace_all:nnN { \cP\# } { \c{\#} } \l__leadsheet_preproc_input_tl
-    \regex_replace_all:nnN { \cU\^ } { \c{textasciicircum} } \l__leadsheet_preproc_input_tl
+    % Escape literal symbols
+    \__leadsheet_escape_hash:N \l__leadsheet_preproc_input_tl
+    \__leadsheet_escape_caret:N \l__leadsheet_preproc_input_tl
 
     % Normalize spacing around barlines for better alignment
     \regex_replace_all:nnN { \s*\|\s* } { \| } \l__leadsheet_preproc_input_tl

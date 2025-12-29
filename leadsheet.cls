@@ -68,10 +68,17 @@
 % \key{<key>}
 % Sets the key signature to be displayed in the title.
 % The key is rendered as a chord symbol.
+% Handles # character properly by storing it for later rendering
 %
 % Example: \key{Cm}
 %
-\newcommand{\key}[1]{\renewcommand{\@key}{\chord{#1}}}
+\ExplSyntaxOn
+\tl_new:N \g__leadsheet_key_tl
+\NewDocumentCommand { \key } { m } {
+    \tl_gset:Nn \g__leadsheet_key_tl { #1 }
+    \renewcommand{\@key}{\expandafter\chord\expandafter{\g__leadsheet_key_tl}}
+}
+\ExplSyntaxOff
 
 % Redefine \maketitle to show title and key on the same line
 % Title is large and bold on the left, key is on the right
