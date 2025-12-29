@@ -20,11 +20,11 @@ A LaTeX document class for creating professional musical leadsheets with integra
 \key{Ebm}
 
 \begin{chordprogression}{Verse A}
-    |^Ebm#11 & |^Ebm7add13 & |^Ebm7 & |^Ebmmaj7
+    |^Ebm#11 >> & |^Ebm7add13 >> & |^Ebm7 >> & |^Ebmmaj7 >>
 \end{chordprogression}
 
 \begin{chordprogression}{Verse B}
-    |^Bbm5 & |^B6 & |^Bbsus2 & |^Bbsus4 ^B
+    |^Bbm5 >> & |^B6 >> & |^Bbsus2 >> & |^Bbsus4 ^B >>
 \end{chordprogression}
 
 \begin{document}
