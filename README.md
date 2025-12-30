@@ -112,6 +112,8 @@ Within `lstabular` or song section environments:
 
 - `<>` - Infinite fill space (push content apart)
 - `- &` - Join table cells with dashes
+- `>>` - Insert a medium space (after a chord)
+- `>>>` - Insert a large space (after a chord)
 
 ### Chord Progressions
 
@@ -129,41 +131,6 @@ Define once, use anywhere:
 \end{songsection}
 ```
 
-## Customization
-
-### Chord Formatting
-
-Override formatting functions to customize appearance:
-
-```latex
-% Redefine in your document preamble
-\ExplSyntaxOn
-\cs_set_protected:Npn \leadsheet_chord_format_root:n #1 {
-    \textcolor{blue}{\textbf{#1}}  % Blue chord roots
-}
-\ExplSyntaxOff
-```
-
-Or use the legacy commands:
-
-```latex
-\renewcommand{\lschordfmtroot}[1]{\textcolor{blue}{\textbf{#1}}}
-```
-
-### Barline Widths
-
-```latex
-\setlength{\lsbarlinewidth}{1.5pt}      % Thicker barlines
-\setlength{\lsreplinewidth}{3pt}        % Thicker repeat barlines
-```
-
-### Highlight Colors
-
-```latex
-% Modify the hlsongsection environment
-% (requires understanding mdframed package options)
-```
-
 ## Requirements
 
 - LuaLaTeX (recommended) or XeLaTeX
@@ -176,42 +143,6 @@ Or use the legacy commands:
 lualatex main.tex
 ```
 
-## Architecture Decisions
-
-### Why Split Into Multiple Files?
-
-1. **Maintainability**: Each module has a single, clear responsibility
-2. **Readability**: Smaller files are easier to navigate and understand
-3. **Reusability**: Modules can potentially be used independently
-4. **Testing**: Isolated components are easier to test and debug
-5. **Standards**: Follows best practices from major LaTeX packages
-
-### Design Principles
-
-- **Progressive Enhancement**: Core functionality works simply; advanced features available when needed
-- **Backwards Compatibility**: Legacy command names preserved where possible
-- **User Control**: Formatting functions exposed for customization
-- **Sensible Defaults**: Professional appearance out of the box
-
-## Development
-
-The package follows LaTeX3 programming conventions:
-
-- Variables are properly typed (tl, seq, etc.)
-- Function names include argument specifiers (`:n`, `:N`, etc.)
-- Private functions clearly marked with `__`
-- Comprehensive inline documentation
-
-## Version History
-
-- **v2.0** (2025-12-29): Complete modular refactoring
-  - Split into separate `.sty` files
-  - Renamed all functions to follow expl3 conventions
-  - Added comprehensive documentation
-  - Improved code organization and comments
-
-- **v1.0** (2025-11-30): Original monolithic implementation
-
 ## License
 
 [Add your license information here]
@@ -219,9 +150,3 @@ The package follows LaTeX3 programming conventions:
 ## Author
 
 [Add your author information here]
-
-## References
-
-- [The expl3 package and LaTeX3 programming](https://tug.org/docs/latex/l3kernel/expl3.pdf)
-- [LaTeX3 Interfaces Documentation](https://ctan.org/pkg/l3kernel)
-- [LaTeX package structure guide](https://en.wikibooks.org/wiki/LaTeX/Installing_Extra_Packages)
