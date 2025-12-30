@@ -17,8 +17,9 @@ A LaTeX document class for creating professional musical leadsheets with integra
 \documentclass{leadsheet}
 \geometry{a5paper,landscape}
 
-\title{Michael Sembello -- Maniac}
+\title{Maniac}
 \key{Ebm}
+\tempo{160}
 
 \begin{chordprogression}{Verse A}
     |^Ebm#11 >> & |^Ebm7add13 >> & |^Ebm7 >> & |^Ebmmaj7 >>
