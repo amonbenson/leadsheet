@@ -117,3 +117,5 @@ pythontex-files-*/
 
 # Todonotes
 *.tdo
+
+!/example.pdf

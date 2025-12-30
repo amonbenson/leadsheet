@@ -46,6 +46,8 @@ A LaTeX document class for creating professional musical leadsheets with integra
 \end{document}
 ```
 
+![Example Leadsheet Output](example.png)
+
 ## Package Structure
 
 The leadsheet class is organized into modular components:
