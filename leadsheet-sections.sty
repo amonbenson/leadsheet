@@ -41,6 +41,9 @@
     % This provides natural spacing that scales with the font
     \setlength{\tabcolsep}{0.5\fontdimen2\font}
 
+    % Set spaceskip to allow white space to stretch infinitely
+    \setlength{\spaceskip}{\fontdimen2\font plus 1fil}
+
     % Create a simple left-aligned table with 32 columns (no outer padding)
     % The table body is preprocessed inline to avoid # doubling
     \noindent\begin{tabular}{@{}*{32}{l}}

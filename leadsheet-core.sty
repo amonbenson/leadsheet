@@ -151,25 +151,19 @@
 \newcommand{\lsfill}{\hskip 0pt plus 1filll}
 
 % \lsjoin
-% Connects two table cells with dashes, used before column separator "&".
-% Removes trailing whitespace, fills with dashes, and cancels the next column's left padding.
+% Connects two table cells with a dash, used before column separator "&".
+% Inserts three equal stretchable spaces, while the center part is filled with dashes.
 \newcommand{\lsjoin}{%
-    \unskip% Remove trailing whitespace
-    \cleaders\hbox{--}\hfill% Fill space with dashes
-    \hspace*{-2\tabcolsep}% Cancel next column's left separation
+    \hskip 0pt plus 1fil% Left space
+    \cleaders\hbox{\rule[0.5ex]{0.1em}{0.4pt}}\hskip 0pt plus 1fil% Center space, filled with dashes
+    \hspace*{-2\tabcolsep}% Right space will be created by the column padding, but subtract the column separator width
 }
 
-% \lssspace
-% Inserts small horizontal space. Default after each chord symbol.
+% \lssspace \lsmspace \lslspace
+% Inserts small, medium, or large horizontal space. Default after each chord symbol.
 \newcommand{\lssspace}{\hspace{0.25em}}
-
-% \lsmspace
-% Inserts medium horizontal space.
-\newcommand{\lsmspace}{\hspace{1.5em}}
-
-% \lslspace
-% Inserts large horizontal space.
-\newcommand{\lslspace}{\hspace{3em}}
+\newcommand{\lsmspace}{\qquad}
+\newcommand{\lslspace}{\qquad\qquad}
 
 
 \ExplSyntaxOff
