@@ -14,7 +14,7 @@
 % ============================================================================
 
 % Load the article base class with extended font sizes
-\LoadClass[11pt,a4paper]{extarticle}
+\LoadClass[11pt]{extarticle}
 
 % Page layout
 \RequirePackage[a4paper,margin=1.5cm]{geometry}
