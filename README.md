@@ -15,6 +15,7 @@ A LaTeX document class for creating professional musical leadsheets with integra
 
 ```latex
 \documentclass{leadsheet}
+\geometry{a5paper,landscape}
 
 \title{Michael Sembello -- Maniac}
 \key{Ebm}
