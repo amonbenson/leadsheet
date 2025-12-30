@@ -25,6 +25,7 @@
 \RequirePackage[english]{babel}
 \RequirePackage{fontspec}
 \RequirePackage[babel=true]{microtype}
+\RequirePackage{lilyglyphs}
 
 % Math support (for symbols used in formatting)
 \RequirePackage{amsmath}
@@ -34,12 +35,6 @@
 
 % Set the main font to TeX Gyre Heros (Helvetica clone)
 \setmainfont{TeX Gyre Heros}
-
-% Configure DejaVu Sans for musical sharp and flat symbols (inline use only)
-% These symbols (♯ U+266F and ♭ U+266D) are not available in TeX Gyre Heros
-\newfontfamily\musicsymbolfont{DejaVu Sans}[Scale=MatchUppercase]
-\newcommand{\musicalsharp}{{\musicsymbolfont ♯}}
-\newcommand{\musicalflat}{{\musicsymbolfont ♭}}
 
 
 % ============================================================================
@@ -62,8 +57,9 @@
 
 \makeatletter
 
-% Variable to store the key signature
+% Variables to store the key signature and tempo information
 \newcommand{\@key}{}
+\newcommand{\@tempo}{}
 
 % \key{<key>}
 % Sets the key signature to be displayed in the title.
@@ -80,13 +76,29 @@
 }
 \ExplSyntaxOff
 
+% \tempo[<note>]{<bpm>}
+% Sets the tempo to be displayed in the title.
+% The optional <note> argument specifies the note value for the tempo marking.
+% Default is quarter note.
+%
+% Example: \tempo{120} or \tempo[\musicalhalfnote]{60}
+%
+\ExplSyntaxOn
+\NewDocumentCommand { \tempo } { o m } {
+    \IfNoValueTF { #1 }
+        { \renewcommand{\@tempo}{\quarterNote = #2} }
+        { \renewcommand{\@tempo}{#1 = #2} }
+}
+\ExplSyntaxOff
+
 % Redefine \maketitle to show title and key on the same line
 % Title is large and bold on the left, key is on the right
 \renewcommand{\maketitle}{%
     \noindent\textbf{\Huge%
         \@title%
         \hfill%
-        \@key%
+        \ifx\@tempo\empty\else\quad\@tempo\fi%
+        \ifx\@key\empty\else\quad\@key\fi%
     }%
     \par\vspace{1em}%
 }

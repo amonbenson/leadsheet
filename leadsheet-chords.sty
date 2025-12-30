@@ -36,21 +36,21 @@
 % --- Helper functions for symbol replacement ---
 
 % \__leadsheet_chord_replace_sharps:N <tl>
-% Replaces \# symbols with \musicalsharp command in a token list
+% Replaces \# symbols with \sharp command in a token list
 \cs_new_protected:Npn \__leadsheet_chord_replace_sharps:N #1 {
-    \regex_replace_all:nnN { \c{\#} } { \c{musicalsharp} } #1
+    \regex_replace_all:nnN { \c{\#} } { \c{sharp} } #1
 }
 
 % \__leadsheet_chord_replace_flats:N <tl>
-% Replaces flat notation (b after note letter) with \musicalflat command
+% Replaces flat notation (b after note letter) with \flat command
 \cs_new_protected:Npn \__leadsheet_chord_replace_flats:N #1 {
-    \regex_replace_all:nnN { ([A-Ga-g])b } { \1 \c{musicalflat} } #1
+    \regex_replace_all:nnN { ([A-Ga-g])b } { \1 \c{flat} } #1
 }
 
 % \__leadsheet_chord_replace_flats_ext:N <tl>
-% Replaces flat notation (b before numbers) with \musicalflat command for extensions
+% Replaces flat notation (b before numbers) with \flat command for extensions
 \cs_new_protected:Npn \__leadsheet_chord_replace_flats_ext:N #1 {
-    \regex_replace_all:nnN { b(\d+) } { \c{musicalflat} \1 } #1
+    \regex_replace_all:nnN { b(\d+) } { \c{flat} \1 } #1
 }
 
 % \__leadsheet_chord_replace_symbols:Nn <tl> <mode>
