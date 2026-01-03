@@ -38,13 +38,13 @@
 % \__leadsheet_chord_replace_sharps:N <tl>
 % Replaces \# symbols with \sharp command in a token list
 \cs_new_protected:Npn \__leadsheet_chord_replace_sharps:N #1 {
-    \regex_replace_all:nnN { \c{\#} } { \c{sharp} } #1
+    \regex_replace_all:nnN { \c{\#} } { \c{leadsheet_chord_format_sharp:} } #1
 }
 
 % \__leadsheet_chord_replace_flats:N <tl>
 % Replaces flat notation (b after note letter) with \flat command
 \cs_new_protected:Npn \__leadsheet_chord_replace_flats:N #1 {
-    \regex_replace_all:nnN { ([A-Ga-g])b } { \1 \c{flat} } #1
+    \regex_replace_all:nnN { ([A-Ga-g])b } { \1 \c{leadsheet_chord_format_flat:} } #1
 }
 
 % \__leadsheet_chord_replace_flats_ext:N <tl>
@@ -173,6 +173,18 @@
 % Formats the slash separator between chord and bass note
 \cs_new_protected:Npn \leadsheet_chord_format_slash: {
     \textbf{/}
+}
+
+% \leadsheet_chord_format_sharp:
+% Formats the sharp symbol
+\cs_new_protected:Npn \leadsheet_chord_format_sharp: {
+    \kern0.5pt\sharp\kern0.5pt
+}
+
+% \leadsheet_chord_format_flat:
+% Formats the flat symbol
+\cs_new_protected:Npn \leadsheet_chord_format_flat: {
+    \kern0.5pt\flat\kern0.5pt
 }
 
 % --- Legacy document-level commands for formatting ---
