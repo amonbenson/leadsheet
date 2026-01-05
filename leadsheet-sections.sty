@@ -46,9 +46,12 @@
 
     % Create a simple left-aligned table with 32 columns (no outer padding)
     % The table body is preprocessed inline to avoid # doubling
-    \noindent\begin{tabular}{@{}*{32}{l}}
+    \noindent%
+    \vspace*{-\parskip}%
+    \begin{tabular}{@{}*{32}{l}}
         \__leadsheet_preprocess:n { #1 }
-    \end{tabular}
+    \end{tabular}%
+    \vspace*{-\parskip}%
 
     \group_end:
 } { }
@@ -75,20 +78,36 @@
 %   #1 - Section title (e.g., "Verse 1", "Chorus", "Bridge")
 %   #2 - Section content (lyrics and chords in lstabular format)
 %
+% \NewDocumentEnvironment { songsection } { m +b } {
+%     \group_begin:
+
+%     % Render the section title in large bold text
+%     \noindent\textbf{\Large #1}%
+%     \par\vspace*{0.5\lspagemargin}
+%     \nopagebreak[4]
+
+%     % Start the lyrics/chords table
+%     % (content will be automatically preprocessed by lstabular)
+%     \begin{lstabular}
+%         #2
+%     \end{lstabular}
+%     \par\vspace*{\lspagemargin}
+
+%     \group_end:
+% } { }
 \NewDocumentEnvironment { songsection } { m +b } {
     \group_begin:
 
-    % Add vertical space before the section
-    \par\bigskip
-
     % Render the section title in large bold text
-    \noindent\textbf{\Large #1}\par\medskip
+    \section*{#1}%
+    \nobreak
 
     % Start the lyrics/chords table
     % (content will be automatically preprocessed by lstabular)
     \begin{lstabular}
         #2
     \end{lstabular}
+    % \par\vspace*{\lspagemargin}
 
     \group_end:
 } { }
@@ -111,21 +130,45 @@
 %   #1 - Section title (e.g., "Chorus", "Hook")
 %   #2 - Section content (lyrics and chords)
 %
+% \NewDocumentEnvironment { hlsongsection } { m +b } {
+%     \vspace*{-\lshlmargin}
+%     \begin{mdframed}[
+%         hidealllines=true,
+%         backgroundcolor=yellow!65,
+%         innerleftmargin=\lshlmargin,
+%         innerrightmargin=\lshlmargin,
+%         innerbottommargin=\dimexpr{},
+%         innertopmargin=\lshlmargin,
+%         leftmargin=-\lshlmargin,
+%         rightmargin=-\lshlmargin,
+%     ]
+%         \begin{songsection}{#1}
+%             #2
+%         \end{songsection}
+%     \end{mdframed}
+%     \vspace*{-\lshlmargin}
+% } { }
 \NewDocumentEnvironment { hlsongsection } { m +b } {
+    \vspace*{\LS@titlespacebefore-\LS@hlmargin}
     \begin{mdframed}[
-        hidealllines=true,           % No border lines
-        backgroundcolor=yellow!65,   % Yellow highlight
-        innerleftmargin=3pt,
-        innerrightmargin=3pt,
-        innerbottommargin=3pt,
-        innertopmargin=-6pt,        % Negative to reduce space above title
-        leftmargin=-3pt,            % Extend slightly into margin
-        rightmargin=-3pt,
+        hidealllines=true,
+        backgroundcolor=yellow!65,
+        usetwoside=false,
+        innerleftmargin=\LS@hlmargin,
+        innerrightmargin=\LS@hlmargin,
+        innertopmargin=\LS@hlmargin,
+        innerbottommargin=\LS@hlmargin,
+        leftmargin=-\LS@hlmargin,
+        rightmargin=-\LS@hlmargin,
+        skipabove=0pt,
+        skipbelow=0pt,
     ]
-    \begin{songsection}{#1}
-        #2
-    \end{songsection}
+        \vspace*{-\LS@titlespacebefore}
+        \begin{songsection}{#1}
+            #2
+        \end{songsection}
     \end{mdframed}
+    \vspace*{-\LS@hlmargin}
 } { }
 
 

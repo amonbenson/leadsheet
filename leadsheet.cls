@@ -13,11 +13,32 @@
 % BASE CLASS AND CORE PACKAGES
 % ============================================================================
 
-% Load the article base class with extended font sizes
-\LoadClass[11pt]{extarticle}
+% Load the article base class
+\LoadClass{extarticle}
+
+% Key-value options support
+\RequirePackage{kvoptions}
+
+\SetupKeyvalOptions{
+    family=LS,
+    prefix=LS@
+}
+
+\DeclareStringOption[11pt]{fontsize}
+\DeclareStringOption[1.5cm]{margin}
+\DeclareStringOption[0.25cm]{hlmargin}
+\DeclareStringOption[2.5ex plus 0.5ex minus 0.5ex]{titlespacebefore}
+\DeclareStringOption[0pt]{titlespaceafter}
+
+\ProcessKeyvalOptions*
 
 % Page layout
-\RequirePackage[a4paper,margin=1.5cm]{geometry}
+\RequirePackage[a4paper,margin=\LS@margin]{geometry}
+\RequirePackage[fontsize=\LS@fontsize]{fontsize}
+
+\RequirePackage{titlesec}
+\titlespacing*{\section}{0pt}{\LS@titlespacebefore}{\LS@titlespaceafter}
+\titlespacing*{\subsection}{0pt}{\LS@titlespacebefore}{\LS@titlespaceafter}
 
 % Font and encoding support
 \RequirePackage[utf8]{inputenc}
@@ -35,6 +56,7 @@
 
 % Set the main font to TeX Gyre Heros (Helvetica clone)
 \setmainfont{TeX Gyre Heros}
+\pgfmathsetmacro{\lsFontSizeRatio}{\f@size / 10.95}%
 
 
 % ============================================================================
@@ -86,7 +108,7 @@
 \ExplSyntaxOn
 \NewDocumentCommand { \tempo } { o m } {
     \IfNoValueTF { #1 }
-        { \renewcommand{\@tempo}{\quarterNote = #2} }
+        { \renewcommand{\@tempo}{\quarterNote[scale=\lsFontSizeRatio] = #2} }
         { \renewcommand{\@tempo}{#1 = #2} }
 }
 \ExplSyntaxOff
@@ -100,8 +122,11 @@
         \ifx\@tempo\empty\else\quad\@tempo\fi%
         \ifx\@key\empty\else\quad\@key\fi%
     }%
-    \par\vspace{1em}%
+    \par\vspace{\LS@titlespaceafter}%
 }
+
+% Remove paragraph indentation globally
+\setlength\parindent{0pt}
 
 \makeatother
 

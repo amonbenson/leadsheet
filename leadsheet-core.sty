@@ -67,6 +67,8 @@
 
     % Normalize spacing around barlines for better alignment
     \regex_replace_all:nnN { \s*\|\s* } { \| } \l__leadsheet_preproc_input_tl
+    \regex_replace_all:nnN { \s*:\|\|\s* } { :\|\| } \l__leadsheet_preproc_input_tl
+    \regex_replace_all:nnN { \s*\|\|:\s* } { \|\|: } \l__leadsheet_preproc_input_tl
 
     % Replace barline symbols with formatting commands
     \regex_replace_all:nnN { :\|\| } { \c{lsrepend} } \l__leadsheet_preproc_input_tl
@@ -76,6 +78,7 @@
     % Replace special shorthand commands
     \tl_replace_all:Nnn \l__leadsheet_preproc_input_tl { >>> } { \lslspace }
     \tl_replace_all:Nnn \l__leadsheet_preproc_input_tl { >> } { \lsmspace }
+    % \regex_replace_all:nnN { ^<> } { \c{lsfill}[0pt] } \l__leadsheet_preproc_input_tl
     \tl_replace_all:Nnn \l__leadsheet_preproc_input_tl { <> } { \lsfill }
     \regex_replace_all:nnN { -\s*& } { \c{lsjoin}& } \l__leadsheet_preproc_input_tl
 
@@ -115,30 +118,38 @@
 \newlength{\lsbarlinewidth}
 \setlength{\lsbarlinewidth}{1pt}
 
-% Width of repeat barlines (double the regular width)
+% Width of repeat barlines
 \newlength{\lsreplinewidth}
-\setlength{\lsreplinewidth}{2\lsbarlinewidth}
+\setlength{\lsreplinewidth}{2pt}
 
-% --- Helper macros for barline positioning ---
-
-% \lslsym{<symbol>}
-% Places a symbol to the left of the current position (using right-aligned zero-width box)
-\newcommand{\lslsym}[1]{\makebox[0pt][r]{\Large{#1}\vphantom{$\vert$}\hspace*{\tabcolsep}}}
-
-% \lsrsym{<symbol>}
-% Places a symbol to the right of the current position (using left-aligned zero-width box)
-\newcommand{\lsrsym}[1]{\makebox[0pt][l]{\hspace*{\tabcolsep}\Large{#1}\vphantom{$\vert$}}}
+% Width of space within repeat barlines
+\newlength{\lsreplinesep}
+\setlength{\lsreplinesep}{1.5pt}
 
 % --- Public barline commands ---
 
-% Regular barline
-\newcommand{\lsbarline}{\lslsym{\vrule width \lsbarlinewidth}}
+% Regular barline: |
+\newcommand{\lsbarline}{\llap{%
+    \rule[-\dp\strutbox]{\lsbarlinewidth}{\dimexpr\ht\strutbox+\dp\strutbox}%
+    \kern1pt%
+}\ignorespaces}
 
 % Repeat start barline: ||:
-\newcommand{\lsrepstart}{\lslsym{\vrule width \lsreplinewidth\hspace{\lsbarlinewidth}\vrule width \lsbarlinewidth :}}
+\newcommand{\lsrepstart}{\llap{%
+    \rule[-\dp\strutbox]{\lsreplinewidth}{\dimexpr\ht\strutbox+\dp\strutbox}%
+    \kern\lsreplinesep%
+    \rule[-\dp\strutbox]{\lsbarlinewidth}{\dimexpr\ht\strutbox+\dp\strutbox}%
+    \large{:}%
+}\ignorespaces}
 
 % Repeat end barline: :||
-\newcommand{\lsrepend}{\lslsym{:\vrule width \lsbarlinewidth\hspace{\lsbarlinewidth}\vrule width \lsreplinewidth}}
+\newcommand{\lsrepend}{\llap{%
+    \large{:}%
+    \rule[-\dp\strutbox]{\lsbarlinewidth}{\dimexpr\ht\strutbox+\dp\strutbox}%
+    \kern\lsreplinesep%
+    \rule[-\dp\strutbox]{\lsreplinewidth}{\dimexpr\ht\strutbox+\dp\strutbox}%
+    \kern1pt%
+}\ignorespaces}
 
 
 % ============================================================================
@@ -148,7 +159,7 @@
 % \lsfill
 % Creates a fill space with the highest order of infinity (1filll).
 % Used to push apart sections of lyrics within a line.
-\newcommand{\lsfill}{\nobreak\hskip 0.5em plus 1filll\nobreak}
+\newcommand{\lsfill}[1][0.5em]{\nobreak\hskip #1 plus 1filll\nobreak}
 
 % \lsjoin
 % Connects two table cells with a dash, used before column separator "&".
