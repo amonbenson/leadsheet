@@ -5,6 +5,7 @@ Usage:
 """
 
 import argparse
+import importlib.metadata
 import sys
 from pathlib import Path
 
@@ -37,6 +38,11 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=["lualatex", "xelatex", "pdflatex"],
         default="lualatex",
         help="LaTeX engine to use (default: lualatex)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {importlib.metadata.version('leadsheet')}",
     )
     parser.add_argument(
         "-v",
