@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: extractions/setup-just@v2
+      - run: just setup
+      - run: uv run ruff check --output-format=github .
+      - run: uv run ruff format --check --preview --output-format=github .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: extractions/setup-just@v2
+      - run: just setup
+      - run: just typecheck
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: extractions/setup-just@v2
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            latexmk \
+            texlive-luatex \
+            texlive-latex-extra \
+            texlive-latex-recommended \
+            texlive-fonts-extra \
+            texlive-music
+
+      - run: just setup
+      - run: just test

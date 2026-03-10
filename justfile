@@ -9,6 +9,10 @@ setup:
 test:
     uv run pytest tests/
 
+# Run pyright type checker
+typecheck:
+    uv run pyright
+
 # Run ruff linter
 lint:
     uv run ruff check .
