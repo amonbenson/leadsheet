@@ -21,21 +21,11 @@ class CompilationError(Exception):
 
 
 def _find_latex_dir() -> Path:
-    """Find the directory containing the leadsheet LaTeX class files.
-
-    Searches in order:
-    1. leadsheet/latex/ inside the package (installed or editable mode)
-    2. latex/ at the repository root (fallback for development)
-    """
-    package_latex = Path(__file__).parent / "latex"
-    if package_latex.exists() and (package_latex / "leadsheet.cls").exists():
-        return package_latex
-
-    repo_latex = Path(__file__).parent.parent / "latex"
-    if repo_latex.exists() and (repo_latex / "leadsheet.cls").exists():
-        return repo_latex
-
-    raise FileNotFoundError("Could not find leadsheet LaTeX class files. Expected either 'leadsheet/latex/' (installed) or 'latex/' (repo root).")
+    """Return the directory containing the leadsheet LaTeX class files."""
+    latex_dir = Path(__file__).parent / "latex"
+    if not (latex_dir / "leadsheet.cls").exists():
+        raise FileNotFoundError(f"Could not find leadsheet LaTeX class files in {latex_dir}")
+    return latex_dir
 
 
 def compile_latex(

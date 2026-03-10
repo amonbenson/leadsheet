@@ -7,7 +7,7 @@ import pytest
 
 from leadsheet.compiler import CompilationError, compile_latex
 from leadsheet.converter import pdf_to_png
-from tests.conftest import EXAMPLES_DIR, extract_pdf_text, run_cli
+from tests.conftest import EXAMPLES_DIR, extract_pdf_pages, extract_pdf_text, pdf_page_count, run_cli
 
 
 class TestPDFOutput:
@@ -122,6 +122,72 @@ class TestPNGFormat:
     def test_pdf_to_png_missing_pdf_raises(self, tmp_path: Path) -> None:
         with pytest.raises(FileNotFoundError):
             pdf_to_png(tmp_path / "nonexistent.pdf", tmp_path / "out.png")
+
+
+_SINGLE_PAGE_TEX = r"""
+\documentclass{leadsheet}
+\title{Short Song}
+\begin{document}
+\maketitle
+Just one line of content.
+\end{document}
+"""
+
+# Repeat enough sections to guarantee a page break on A4
+_MULTI_PAGE_TEX = r"""
+\documentclass{leadsheet}
+\title{Long Song}
+\begin{document}
+\maketitle
+""" + (
+    r"""
+\begin{songsection}{Section}
+Just on the street of chance \\
+Just on the street of chance \\
+Just on the street of chance \\
+Just on the street of chance \\
+\end{songsection}
+"""
+    * 20
+) + r"\end{document}"
+
+
+class TestPageNumbers:
+    """Verify that page numbers appear only on multi-page documents."""
+
+    @pytest.fixture(scope="class")
+    def single_page_pdf(self, tmp_path_factory: pytest.TempPathFactory) -> Path:
+        d = tmp_path_factory.mktemp("single")
+        tex = d / "single.tex"
+        tex.write_text(_SINGLE_PAGE_TEX)
+        result = compile_latex(tex, d / "single.pdf")
+        return result["pdf"]
+
+    @pytest.fixture(scope="class")
+    def multi_page_pdf(self, tmp_path_factory: pytest.TempPathFactory) -> Path:
+        d = tmp_path_factory.mktemp("multi")
+        tex = d / "multi.tex"
+        tex.write_text(_MULTI_PAGE_TEX)
+        result = compile_latex(tex, d / "multi.pdf")
+        return result["pdf"]
+
+    def test_single_page_document_has_one_page(self, single_page_pdf: Path) -> None:
+        assert pdf_page_count(single_page_pdf) == 1
+
+    def test_multi_page_document_has_multiple_pages(self, multi_page_pdf: Path) -> None:
+        assert pdf_page_count(multi_page_pdf) > 1
+
+    def test_single_page_has_no_page_number(self, single_page_pdf: Path) -> None:
+        pages = extract_pdf_pages(single_page_pdf)
+        # The only page should contain no isolated digit that could be a page number
+        lines = [line.strip() for line in pages[0].splitlines()]
+        assert "1" not in lines
+
+    def test_multi_page_has_page_numbers(self, multi_page_pdf: Path) -> None:
+        pages = extract_pdf_pages(multi_page_pdf)
+        for i, page_text in enumerate(pages, start=1):
+            lines = [line.strip() for line in page_text.splitlines()]
+            assert str(i) in lines, f"Expected page number {i} on page {i}"
 
 
 class TestCLI:

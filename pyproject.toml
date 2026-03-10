@@ -20,10 +20,6 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Include the latex/ directory at repo root as package data inside leadsheet/latex/
-[tool.hatch.build.targets.wheel.force-include]
-"latex" = "leadsheet/latex"
-
 [tool.pytest.ini_options]
 pythonpath = ["."]
 addopts = ["--capture=no"]

@@ -17,6 +17,17 @@ def extract_pdf_text(pdf_path: Path) -> str:
     return "".join(page.extract_text() or "" for page in reader.pages)
 
 
+def extract_pdf_pages(pdf_path: Path) -> list[str]:
+    """Return a list of extracted text strings, one entry per page."""
+    reader = pypdf.PdfReader(str(pdf_path))
+    return [page.extract_text() or "" for page in reader.pages]
+
+
+def pdf_page_count(pdf_path: Path) -> int:
+    """Return the number of pages in a PDF."""
+    return len(pypdf.PdfReader(str(pdf_path)).pages)
+
+
 def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     """Run 'python -m leadsheet' with the given arguments and return the result."""
     return subprocess.run(

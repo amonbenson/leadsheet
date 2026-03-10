@@ -1,3 +1,5 @@
+[![CI](https://github.com/amonbenson/leadsheet/actions/workflows/ci.yml/badge.svg)](https://github.com/amonbenson/leadsheet/actions/workflows/ci.yml)
+
 # Leadsheet
 
 A Python library and LaTeX document class for creating professional musical leadsheets with integrated chord symbols, lyrics, barlines, and sectional structure.
@@ -22,6 +24,12 @@ python -m leadsheet my_song.tex
 # Specify output path
 python -m leadsheet my_song.tex output/my_song.pdf
 
+# Compile to PNG
+python -m leadsheet my_song.tex output/my_song --format png
+
+# Compile to both PDF and PNG
+python -m leadsheet my_song.tex output/my_song --format pdf png
+
 # Use a different LaTeX engine
 python -m leadsheet my_song.tex --engine xelatex
 ```
@@ -31,8 +39,16 @@ python -m leadsheet my_song.tex --engine xelatex
 ```python
 from leadsheet import compile_latex
 
-output = compile_latex("my_song.tex", "output/my_song.pdf")
-print(f"Compiled to {output}")
+# Compile to PDF (default)
+result = compile_latex("my_song.tex", "output/my_song.pdf")
+print(f"PDF: {result['pdf']}")
+
+# Compile to PNG
+result = compile_latex("my_song.tex", "output/my_song", formats="png")
+print(f"PNG: {result['png']}")
+
+# Compile to both
+result = compile_latex("my_song.tex", "output/my_song", formats=["pdf", "png"])
 ```
 
 ### Write a leadsheet
@@ -86,17 +102,16 @@ uv add leadsheet
 - [uv](https://docs.astral.sh/uv/) — Python package manager
 - [just](https://just.systems/) — command runner
 - A TeX distribution with LuaLaTeX and `latexmk` (e.g. [TeX Live](https://tug.org/texlive/), [MiKTeX](https://miktex.org/))
-- ImageMagick (`magick`) — optional, only required for `just example-png`
-
 ### Common commands
 
 ```bash
-just setup        # Install dependencies
-just test         # Run the test suite
-just lint         # Check for lint issues
-just format       # Auto-fix and format
-just example      # Build examples/maniac.pdf and examples/maniac.png
-just build        # Build wheel and sdist
+just setup          # Install dependencies
+just test           # Run the test suite
+just lint           # Check for lint issues
+just typecheck      # Run pyright type checker
+just format         # Auto-fix and format
+just build-examples # Build examples/maniac.pdf and examples/maniac.png
+just build          # Build wheel and sdist
 ```
 
 ## LaTeX Syntax Reference
@@ -151,7 +166,7 @@ Define once, reuse anywhere:
 - Python >= 3.12
 - LuaLaTeX (recommended) or XeLaTeX
 - TeX Gyre Heros font (usually bundled with TeX distributions)
-- LaTeX packages: `fontspec`, `expl3`, `mdframed`, `soul`, `array`, `geometry`, `microtype`
+- LaTeX packages: `fontspec`, `expl3`, `mdframed`, `soul`, `array`, `geometry`, `microtype`, `fancyhdr`, `lastpage`
 
 ## Project Structure
 
@@ -161,17 +176,19 @@ leadsheet/
 │   ├── __init__.py
 │   ├── __main__.py     # CLI entry point
 │   ├── compiler.py     # Compilation engine
-│   └── latex/          # Bundled LaTeX class files (package data)
-├── latex/              # LaTeX source files (canonical)
-│   ├── leadsheet.cls
-│   ├── leadsheet-core.sty
-│   ├── leadsheet-chords.sty
-│   └── leadsheet-sections.sty
+│   ├── converter.py    # PDF-to-PNG conversion
+│   └── latex/          # LaTeX class files (bundled as package data)
+│       ├── leadsheet.cls
+│       ├── leadsheet-core.sty
+│       ├── leadsheet-chords.sty
+│       └── leadsheet-sections.sty
 ├── examples/           # Example leadsheets
 │   └── maniac.tex
 ├── tests/              # Test suite
 │   ├── conftest.py
 │   └── test_compiler.py
+├── .github/workflows/  # CI
+│   └── ci.yml
 ├── pyproject.toml
 └── justfile
 ```

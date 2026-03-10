@@ -36,6 +36,15 @@
 \RequirePackage[a4paper,margin=\LS@margin]{geometry}
 \RequirePackage[fontsize=\LS@fontsize]{fontsize}
 
+% Page numbers: only shown when the document has more than one page
+\RequirePackage{lastpage}
+\RequirePackage{refcount}
+\RequirePackage{fancyhdr}
+\fancyhf{}
+\fancyfoot[C]{\ifnum\getpagerefnumber{LastPage}>1\relax\thepage\fi}
+\renewcommand{\headrulewidth}{0pt}
+\pagestyle{fancy}
+
 \RequirePackage{titlesec}
 \titlespacing*{\section}{0pt}{\LS@titlespacebefore}{\LS@titlespaceafter}
 \titlespacing*{\subsection}{0pt}{\LS@titlespacebefore}{\LS@titlespaceafter}

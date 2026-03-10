@@ -12,23 +12,21 @@ leadsheet/
 │   ├── __init__.py             # Public API exports
 │   ├── __main__.py             # CLI entry point (python -m leadsheet)
 │   ├── compiler.py             # Compilation engine
-│   └── latex/                  # LaTeX class files (package data, mirrors latex/)
+│   ├── converter.py            # PDF-to-PNG conversion (pymupdf)
+│   └── latex/                  # LaTeX class files (bundled as package data)
 │       ├── leadsheet.cls
 │       ├── leadsheet-core.sty
 │       ├── leadsheet-chords.sty
 │       └── leadsheet-sections.sty
-├── latex/                      # Canonical LaTeX source files
-│   ├── leadsheet.cls           # Main document class
-│   ├── leadsheet-core.sty      # Core preprocessing & utilities
-│   ├── leadsheet-chords.sty    # Chord parsing & progressions
-│   └── leadsheet-sections.sty # Section environments
 ├── examples/                   # Example leadsheets
 │   ├── maniac.tex
-│   ├── maniac.pdf              # Built by `just example-pdf`
-│   └── maniac.png              # Built by `just example-png`
+│   ├── maniac.pdf              # Built by `just build-examples`
+│   └── maniac.png              # Built by `just build-examples`
 ├── tests/                      # Test suite
 │   ├── conftest.py             # Shared fixtures and helpers
 │   └── test_compiler.py        # Integration tests
+├── .github/workflows/
+│   └── ci.yml                  # GitHub Actions CI (lint, typecheck, test)
 ├── pyproject.toml              # Project metadata, dependencies, tool config
 └── justfile                    # Task runner commands
 ```
@@ -39,8 +37,9 @@ leadsheet/
 
 | Module | Responsibility |
 |---|---|
-| `compiler.py` | Locate LaTeX class files, build environment, invoke latexmk, collect output PDF |
-| `__main__.py` | Parse CLI arguments, call `compile_latex`, handle and format errors |
+| `compiler.py` | Locate LaTeX class files, build environment, invoke latexmk, collect outputs |
+| `converter.py` | Convert a compiled PDF to PNG using `pymupdf` |
+| `__main__.py` | Parse CLI arguments (`--format`, `--engine`), call `compile_latex`, handle errors |
 | `__init__.py` | Re-export public API: `compile_latex`, `CompilationError` |
 
 ### Compilation Flow
@@ -49,11 +48,9 @@ leadsheet/
 CLI / Python API
         │
         ▼
-compile_latex(input_path, output_path, engine, verbose)
+compile_latex(input_path, output_path, formats, engine, verbose)
         │
-        ├── _find_latex_dir()          # Locate leadsheet.cls and .sty files
-        │       ├── Try: leadsheet/latex/  (package data, installed or editable)
-        │       └── Try: latex/            (repo root, development fallback)
+        ├── _find_latex_dir()          # Locate leadsheet/latex/ inside the package
         │
         ├── _build_env(latex_dir)      # Set TEXINPUTS so TeX finds class files
         │
@@ -61,7 +58,11 @@ compile_latex(input_path, output_path, engine, verbose)
         │
         ├── subprocess.run(cmd, ...)   # Execute latexmk in a temp directory
         │
-        └── shutil.copy2(tmp_pdf, output_path)   # Move PDF to requested location
+        ├── shutil.copy2(tmp_pdf, ...)     # Move PDF to requested location
+        │
+        └── pdf_to_png(pdf, png)  ──────── If "png" in formats
+                │                          (converter.py, uses pymupdf/fitz)
+                └── returns png path
 ```
 
 ### Error Handling
@@ -71,12 +72,9 @@ compile_latex(input_path, output_path, engine, verbose)
 
 ### LaTeX Class File Resolution
 
-The Python package bundles the LaTeX files in two locations:
+The LaTeX class files live in `leadsheet/latex/` — the single source of truth, both in the repository and in the installed wheel. Hatchling includes all files under the `leadsheet/` directory automatically, so no special `force-include` configuration is needed.
 
-1. **`leadsheet/latex/`** — package data included in the installed wheel (via `[tool.hatch.build.targets.wheel.force-include]`). This is checked first.
-2. **`latex/`** (repo root) — development fallback when running from the source tree without an editable install.
-
-The TEXINPUTS environment variable is set at compilation time so `lualatex` finds `leadsheet.cls` regardless of the working directory.
+The `TEXINPUTS` environment variable is set at compilation time so `lualatex` finds `leadsheet.cls` regardless of the working directory.
 
 ## LaTeX Package
 
@@ -137,9 +135,11 @@ User writes:    \begin{songsection}{Verse 1}
 | Tool | Purpose |
 |---|---|
 | [uv](https://docs.astral.sh/uv/) | Python package and virtual environment management |
-| [just](https://just.systems/) | Task runner (`just test`, `just example`, etc.) |
+| [just](https://just.systems/) | Task runner (`just test`, `just lint`, `just typecheck`, etc.) |
 | [ruff](https://docs.astral.sh/ruff/) | Linting and formatting |
+| [pyright](https://github.com/microsoft/pyright) | Static type checking |
 | [pytest](https://pytest.org/) | Test framework |
+| [pymupdf](https://pymupdf.readthedocs.io/) | PDF-to-PNG conversion (runtime dependency) |
 | [latexmk](https://ctan.org/pkg/latexmk) | Multi-pass LaTeX build tool (backend for compilation) |
 | [hatchling](https://hatch.pypa.io/) | Build backend for the Python wheel |
 
@@ -148,10 +148,12 @@ User writes:    \begin{songsection}{Verse 1}
 Tests are integration tests that compile real `.tex` files via the CLI and Python API:
 
 - **`TestPDFOutput`** — compile `examples/maniac.tex` once per session (session-scoped fixture), then check that the PDF contains expected text (title, section headings, lyrics).
-- **`TestCompilerAPI`** — test `compile_latex()` directly: default output paths, explicit paths, missing input, invalid LaTeX, and nested output directory creation.
-- **`TestCLI`** — test `python -m leadsheet` via subprocess: successful compilation, success message, error exit codes, default output path, `--engine` flag.
+- **`TestCompilerAPI`** — test `compile_latex()` directly: default output paths, explicit paths, missing input, invalid LaTeX, nested output directory creation, and format validation.
+- **`TestPNGFormat`** — test PNG output: `formats="png"`, `formats=["pdf", "png"]`, PNG magic bytes, and the standalone `pdf_to_png()` converter.
+- **`TestPageNumbers`** — verify page numbers appear only on multi-page documents by compiling a minimal single-page and a long multi-page document and inspecting extracted text per page.
+- **`TestCLI`** — test `python -m leadsheet` via subprocess: `--format`, `--engine`, error exit codes, success messages.
 
-Shared helpers in `conftest.py` (`extract_pdf_text`, `run_cli`) prevent code duplication across test classes.
+Shared helpers in `conftest.py` (`extract_pdf_text`, `extract_pdf_pages`, `pdf_page_count`, `run_cli`) prevent duplication across test classes.
 
 ## Extension Points
 
@@ -174,4 +176,3 @@ The `--engine` CLI flag and `engine` parameter of `compile_latex` accept any eng
 - `leadsheet-tablature.sty` — Guitar tabs
 - `leadsheet-diagrams.sty` — Chord diagrams
 - `leadsheet-transposition.sty` — Key transposition utilities
-- `compile_to_png()` — Direct PDF-to-PNG convenience wrapper
