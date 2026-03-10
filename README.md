@@ -107,11 +107,13 @@ uv add leadsheet
 ```bash
 just setup          # Install dependencies
 just test           # Run the test suite
-just lint           # Check for lint issues
+just lint           # Check for lint and format issues
 just typecheck      # Run pyright type checker
-just format         # Auto-fix and format
+just check          # Check for any code issues (runs typecheck and lint)
+just fix            # Auto-fix and format
 just build-examples # Build examples/maniac.pdf and examples/maniac.png
 just build          # Build wheel and sdist
+just clean          # Remove temporary output files
 ```
 
 ## LaTeX Syntax Reference
