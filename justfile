@@ -30,7 +30,7 @@ fix:
 
 # Convert example PDF to PNG
 build-examples:
-    uv run python -m leadsheet examples/maniac.tex examples/maniac --format png
+    uv run python -m leadsheet "examples/No Escape.tex" "examples/No Escape.png" --format png
 
 # Build a distributable wheel and sdist
 build:

@@ -55,28 +55,91 @@ result = compile_latex("my_song.tex", "output/my_song", formats=["pdf", "png"])
 
 ```latex
 \documentclass{leadsheet}
-\geometry{a5paper,landscape}
 
-\title{Maniac}
-\key{Ebm}
-\tempo{160}
+% Make the title size a bit smaller so it fits nicely
+\title{\huge{Schlegel Flegel -- No Escape}}
+\key{Gm}
+\tempo{120}
 
-\begin{chordprogression}{Verse A}
-    |^Ebm#11 >> & |^Ebm7add13 >> & |^Ebm7 >> & |^Ebmmaj7 >>
+\begin{chordprogression}{Verse}
+    |^Gm >> & |^Dm >> & |^F >> & |^Csus4 ^C
+\end{chordprogression}
+
+\begin{chordprogression}{Chorus}
+    |^Gm >> & |^Dm >> & |^F >> & |^Cm
+\end{chordprogression}
+
+\begin{chordprogression}{Post-Chorus}
+    |^Gm >> & |^Dm >> & |^F >> & |^C
+\end{chordprogression}
+
+\begin{chordprogression}{Chorus Variation}
+    |^G >> & |^D >> & |^Fm >> & |^Cm
 \end{chordprogression}
 
 \begin{document}
+
 \maketitle
 
+\begin{songsection}{Intro}
+    ^{Verse}
+\end{songsection}
+
 \begin{songsection}{Verse 1}
-    & ^{Verse A} \\
-    <> Just a & steel town girl on a & Saturday night. <> Lookin' & for the fight of her & life \\
+    ^{Verse} \\
+    <> What would you do, & trapped in your mind, <> like a & crea - ture in a & cage <> \\
+    ^{Verse} \\
+    <> Red its eyes, a & terrible scream, <> like a & desperate cry for & help <>
+\end{songsection}
+
+\begin{songsection}{Bridge 1}
+    & |^Cm >> & |^G >> & |^Cm >> & ^G >> ^G/F \\
+    & <> But such a warming & heart. <> & Inside those glaring & eyes \\
+    & |^Cm/Eb ^Bb/D ^Cm ^Bb/D & |^Eb >> ^Eb ^F \\
+    A & voice sweeter than & mine
+\end{songsection}
+
+\begin{hlsongsection}{Chorus 1}
+    ^{Chorus} \\
+    <> No escape I'm cag-&ed in my own world. <> & I can never die, & >> it is a cry for help <> \\
+    ^{Chorus} \\
+    <> Burning in my thro-&at cause I taste it, <> but & I can't feel the pa-&in, because I'm already numb <> \\
+\end{hlsongsection}
+
+\begin{songsection}{Post-Chorus 1}
+    ^{Post-Chorus} \\
+    ^{Post-Chorus} \\
+    \\
+    ^{Chorus}
+\end{songsection}
+
+\begin{songsection}{Bridge 2}
+    ^{Post-Chorus} \\
+    And I & know one & thing for & sure <> \\
+\end{songsection}
+
+\begin{hlsongsection}{Chorus 2}
+    & ^{Chorus Variation} \\
+    I will esca-&pe from my cage and fl-&ee from my own world. <> & I would rather die-&~ and I don't need your help <> \\
+    & ^{Chorus Variation} \\
+    & <> It will take me a lo-&ng way to go there, <> but & I can't feel the pa-&in, who isn't already numb? <> \\
+\end{hlsongsection}
+
+\begin{songsection}{Post-Chorus 2}
+    ^{Post-Chorus} \\
+    & <> Who isn't already nu-&mb? & >> Who isn't already numb? \\
+    ^{Post-Chorus} \\
+    & <> Who isn't already nu-&mb? & >> Because I'm already numb
+\end{songsection}
+
+\begin{songsection}{Outro}
+    ^{Chorus}
 \end{songsection}
 
 \end{document}
 ```
 
-![Example Leadsheet Output](examples/maniac.png)
+![Example Leadsheet Output](examples/No%20Escape.png)
 
 
 ## Installation
