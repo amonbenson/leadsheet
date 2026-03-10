@@ -13,16 +13,18 @@ test:
 typecheck:
     uv run pyright
 
-# Run ruff linter
+# Run ruff linter and format check
 lint:
     uv run ruff check .
-
-# Run ruff formatter check (no changes)
-lint-format:
     uv run ruff format --check .
 
+# Run all checks (typecheck, lint, and format)
+check:
+    just typecheck
+    just lint
+
 # Auto-fix lint issues and format code
-format:
+fix:
     uv run ruff check --fix .
     uv run ruff format .
 

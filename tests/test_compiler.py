@@ -134,13 +134,15 @@ Just one line of content.
 """
 
 # Repeat enough sections to guarantee a page break on A4
-_MULTI_PAGE_TEX = r"""
+_MULTI_PAGE_TEX = (
+    r"""
 \documentclass{leadsheet}
 \title{Long Song}
 \begin{document}
 \maketitle
-""" + (
-    r"""
+"""
+    + (
+        r"""
 \begin{songsection}{Section}
 Just on the street of chance \\
 Just on the street of chance \\
@@ -148,8 +150,10 @@ Just on the street of chance \\
 Just on the street of chance \\
 \end{songsection}
 """
-    * 20
-) + r"\end{document}"
+        * 20
+    )
+    + r"\end{document}"
+)
 
 
 class TestPageNumbers:
