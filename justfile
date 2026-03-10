@@ -28,9 +28,9 @@ fix:
     uv run ruff check --fix .
     uv run ruff format .
 
-# Convert example PDF to PNG
+# Build example PDF and PNG
 build-examples:
-    uv run python -m leadsheet "examples/No Escape.tex" "examples/No Escape.png" --format png
+    uv run python -m leadsheet "examples/No Escape.tex" "examples/No Escape" --format pdf png
 
 # Build a distributable wheel and sdist
 build:

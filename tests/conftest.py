@@ -9,6 +9,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).parent.parent
 EXAMPLES_DIR = REPO_ROOT / "examples"
+EXAMPLE_TEX = EXAMPLES_DIR / "No Escape.tex"
 
 
 def extract_pdf_text(pdf_path: Path) -> str:
@@ -39,10 +40,10 @@ def run_cli(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 @pytest.fixture(scope="session")
-def maniac_pdf(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """Compile examples/maniac.tex once per test session and return the PDF path."""
-    out = tmp_path_factory.mktemp("output") / "maniac.pdf"
-    result = run_cli(str(EXAMPLES_DIR / "maniac.tex"), str(out))
+def example_pdf(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Compile the example .tex file once per test session and return the PDF path."""
+    out = tmp_path_factory.mktemp("output") / "no_escape.pdf"
+    result = run_cli(str(EXAMPLE_TEX), str(out))
     assert result.returncode == 0, f"Compilation failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
     assert out.exists()
     return out
