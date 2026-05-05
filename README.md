@@ -19,19 +19,19 @@ A Python library and LaTeX document class for creating professional musical lead
 
 ```bash
 # Compile to PDF (same directory as input)
-python -m leadsheet my_song.tex
+leadsheet my_song.tex
 
 # Specify output path
-python -m leadsheet my_song.tex output/my_song.pdf
+leadsheet my_song.tex output/my_song.pdf
 
 # Compile to PNG
-python -m leadsheet my_song.tex output/my_song --format png
+leadsheet my_song.tex output/my_song --format png
 
 # Compile to both PDF and PNG
-python -m leadsheet my_song.tex output/my_song --format pdf png
+leadsheet my_song.tex output/my_song --format pdf png
 
 # Use a different LaTeX engine
-python -m leadsheet my_song.tex --engine xelatex
+leadsheet my_song.tex --engine xelatex
 ```
 
 ### Use as a Python library
